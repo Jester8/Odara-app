@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTailwind } from 'tailwind-rn';
 import {
   useFonts,
   BricolageGrotesque_400Regular,
@@ -44,8 +44,6 @@ const slides = [
 ];
 
 const Slides = ({ navigation }) => {
-  const tailwind = useTailwind();
-
   const [fontsLoaded] = useFonts({
     BricolageGrotesque_400Regular,
     BricolageGrotesque_600SemiBold,
@@ -101,7 +99,7 @@ const Slides = ({ navigation }) => {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={tailwind('flex-1 bg-white')} onLayout={onLayoutRootView}>
+    <View style={styles.container} onLayout={onLayoutRootView}>
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -119,11 +117,8 @@ const Slides = ({ navigation }) => {
         renderItem={({ item, index }) => (
           <Animated.View
             style={[
-              tailwind('items-center justify-center'),
+              styles.slide,
               {
-                width,
-                paddingTop: 60,
-                paddingHorizontal: 20,
                 transform: [{ scale: animatedValues[index] }],
               },
             ]}
@@ -132,64 +127,22 @@ const Slides = ({ navigation }) => {
               source={item.image}
               resizeMode="contain"
               onError={(e) => console.log('Image error:', e.nativeEvent.error)}
-              style={{
-                width: '100%',
-                height: 300,
-                marginBottom: 30,
-              }}
+              style={styles.image}
             />
-            <Text
-              style={[
-                tailwind('text-center'),
-                {
-                  fontSize: 24,
-                  fontFamily: 'BricolageGrotesque_700Bold',
-                  color: '#1c0032',
-                  marginBottom: 16,
-                },
-              ]}
-            >
-              {item.title}
-            </Text>
-            <Text
-              style={[
-                tailwind('text-center text-gray-600'),
-                {
-                  fontSize: 16,
-                  lineHeight: 24,
-                  paddingHorizontal: 30,
-                  fontFamily: 'BricolageGrotesque_400Regular',
-                },
-              ]}
-            >
-              {item.description}
-            </Text>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description}>{item.description}</Text>
           </Animated.View>
         )}
       />
 
-      <SafeAreaView
-        edges={['bottom']}
-        style={[
-          tailwind('absolute left-0 right-0 flex-row justify-between items-center'),
-          {
-            bottom: 0,
-            paddingHorizontal: 30,
-            paddingBottom: 30,
-            backgroundColor: 'rgba(255,255,255,0.9)',
-          },
-        ]}
-      >
-        <View style={tailwind('flex-row items-center')}>
+      <SafeAreaView edges={['bottom']} style={styles.bottomContainer}>
+        <View style={styles.dotsContainer}>
           {slides.map((_, i) => (
             <View
               key={i}
               style={[
-                tailwind('h-2 rounded-full mx-1'),
-                {
-                  width: currentIndex === i ? 16 : 8,
-                  backgroundColor: currentIndex === i ? '#1c0032' : '#ccc',
-                },
+                styles.dot,
+                currentIndex === i && styles.activeDot,
               ]}
             />
           ))}
@@ -200,20 +153,19 @@ const Slides = ({ navigation }) => {
             onPress={currentIndex === slides.length - 1 ? handleGetStarted : handleNext}
             activeOpacity={0.8}
             style={[
-              tailwind('rounded-full'),
-              {
-                backgroundColor: currentIndex === slides.length - 1 ? '#1c0032' : '#f0f0f0',
-                paddingHorizontal: 25,
-                paddingVertical: 12,
-              },
+              styles.button,
+              currentIndex === slides.length - 1
+                ? styles.buttonDark
+                : styles.buttonLight,
             ]}
           >
             <Text
-              style={{
-                fontSize: 16,
-                fontFamily: 'BricolageGrotesque_600SemiBold',
-                color: currentIndex === slides.length - 1 ? '#fff' : '#1c0032',
-              }}
+              style={[
+                styles.buttonText,
+                currentIndex === slides.length - 1
+                  ? styles.buttonTextLight
+                  : styles.buttonTextDark,
+              ]}
             >
               {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
             </Text>
@@ -221,26 +173,106 @@ const Slides = ({ navigation }) => {
         </Animated.View>
       </SafeAreaView>
 
-      <TouchableOpacity
-        onPress={handleSkip}
-        style={[
-          tailwind('absolute z-10'),
-          { top: 50, right: 20, padding: 10 },
-        ]}
-      >
-        <Text
-          style={{
-            fontSize: 16,
-            fontFamily: 'BricolageGrotesque_600SemiBold',
-            color: '#1c0032',
-            opacity: 0.8,
-          }}
-        >
-          Skip
-        </Text>
+      <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+        <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 export default Slides;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  slide: {
+    width,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+  },
+  image: {
+    width: '100%',
+    height: 300,
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: 'BricolageGrotesque_700Bold',
+    color: '#1c0032',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 16,
+    fontFamily: 'BricolageGrotesque_400Regular',
+    color: '#4B5563',
+    lineHeight: 24,
+    textAlign: 'center',
+    paddingHorizontal: 30,
+  },
+  bottomContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 30,
+    paddingBottom: 30,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dot: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    backgroundColor: '#ccc',
+  },
+  activeDot: {
+    width: 16,
+    backgroundColor: '#1c0032',
+  },
+  button: {
+    borderRadius: 999,
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+  },
+  buttonLight: {
+    backgroundColor: '#f0f0f0',
+  },
+  buttonDark: {
+    backgroundColor: '#1c0032',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontFamily: 'BricolageGrotesque_600SemiBold',
+  },
+  buttonTextDark: {
+    color: '#1c0032',
+  },
+  buttonTextLight: {
+    color: '#fff',
+  },
+  skipButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    padding: 10,
+    zIndex: 10,
+  },
+  skipText: {
+    fontSize: 16,
+    fontFamily: 'BricolageGrotesque_600SemiBold',
+    color: '#1c0032',
+    opacity: 0.8,
+  },
+});
