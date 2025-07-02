@@ -7,6 +7,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from "./screens/auth/LoginScreen"
 import RegisterScreen from "./screens/auth/RegisterScreen";
 import ForgotPassword from './screens/auth/ForgotPassword';
+import GetStarted from './screens/GetStarted';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,7 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="GetStarted" component={GetStarted} />
         <Stack.Screen name="Slides" component={Slides} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />

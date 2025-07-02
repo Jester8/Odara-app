@@ -4,10 +4,8 @@ import { View, Image, ActivityIndicator, StyleSheet } from 'react-native';
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     setTimeout(() => {
-      navigation.replace('Slides'); // Navigate to Welcome screen after 6 seconds
-      // You can also use navigation.navigate('Welcome') if you want to keep the splash screen in the stack
-      // You can also navigate to another screen like this:
-    }, 1000); 
+      navigation.replace('GetStarted'); 
+    }, 5000); 
   }, []);
 
   return (
@@ -32,7 +30,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 200,
+    width: 150,
     height: 200,
   },
   spinner: {
