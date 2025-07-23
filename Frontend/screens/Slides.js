@@ -77,19 +77,18 @@ const Slides = ({ navigation }) => {
     });
   };
 
-  const handleSkip = () => {
-    flatListRef.current.scrollToIndex({ index: slides.length - 1, animated: true });
-  };
+ const handleSkip = () => {
+  navigation.replace('navigation');
+};
 
-  const handleGetStarted = () => {
-    Animated.sequence([
-      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
-      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start(() => {
-      navigation.navigate('Login');
-    });
-  };
-
+const handleGetStarted = () => {
+  Animated.sequence([
+    Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+    Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+  ]).start(() => {
+    navigation.replace('Login');
+  });
+};
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index);

@@ -14,7 +14,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons'; // Add this line
+import { Ionicons } from '@expo/vector-icons'; 
+import axios from 'axios';
+
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -122,15 +124,15 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     // Password validation
-    if (!password) {
-      newErrors.password = 'Password is required';
-      isValid = false;
-    } else if (!isStrongPassword(password)) {
-      newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, number and special character';
-      isValid = false;
-    } else {
-      newErrors.password = '';
-    }
+ if (!password) {
+  newErrors.password = 'Password is required';
+  isValid = false;
+} else if (!/^[A-Za-z0-9]+$/.test(password)) {
+  newErrors.password = 'Password can only contain letters and numbers';
+  isValid = false;
+} else {
+  newErrors.password = '';
+}
 
     // Confirm password validation
     if (!confirmPassword) {
@@ -165,6 +167,11 @@ const RegisterScreen = ({ navigation }) => {
     return isValid;
   };
 
+
+   const handleGoogleSignup= () => {
+    // Implement Google login logic
+    console.log('Google Signup');
+  };
   const formatDate = (date) => {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   };
@@ -175,26 +182,28 @@ const RegisterScreen = ({ navigation }) => {
     setDateOfBirth(currentDate);
   };
 
-  const handleSignUp = () => {
-    if (validateInputs()) {
-      const userData = {
-        firstName,
-        lastName,
-        phoneNumber,
-        email,
-        password,
-        dateOfBirth
-      };
+ const handleSignUp = async () => {
+  if (validateInputs()) {
+    const userData = {
+      name: `${firstName} ${lastName}`,
+      email,
+      password,
+      phoneNumber,
+      dateOfBirth
+    };
+
+    try {
+       const response = await axios.post('http://192.168.0.2:5000/api/auth/register', userData);
+
       
-      console.log('Registration data:', userData);
-      
-      Alert.alert(
-        "Registration Successful", 
-        "Your account has been created successfully!",
-        [{ text: "OK", onPress: () => navigation.navigate('Login') }]
-      );
+      console.log('Registration success:', response.data);
+      navigation.navigate('Congrats');
+    } catch (error) {
+      console.error('Registration error:', error?.response?.data || error.message);
+      Alert.alert("Registration Failed", error?.response?.data?.message || "Something went wrong.");
     }
-  };
+  }
+};
 
   const handleLogin = () => {
     navigation.navigate('Login');
@@ -392,11 +401,30 @@ const RegisterScreen = ({ navigation }) => {
               </TouchableOpacity>
               {errors.terms ? <Text style={styles.errorText}>{errors.terms}</Text> : null}
             </View>
+
+            
             
             {/* Sign Up Button */}
             <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
               <Text style={styles.signUpButtonText}>Create Account</Text>
             </TouchableOpacity>
+
+
+<View style={styles.orContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.divider} />
+            </View>
+            
+          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignup}>
+                          <Image 
+                            source={require('../../assets/logo/google.webp')} 
+                            style={styles.googleIcon}
+                            resizeMode="contain"
+                          />
+                          <Text style={styles.googleButtonText}>Sign up with Google</Text>
+                        </TouchableOpacity>
+                        
             
             {/* Already have account section */}
             <View style={styles.loginContainer}>
@@ -538,6 +566,43 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: width * 0.045,
     fontWeight: '600',
+  },
+
+   orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: height * 0.02,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  orText: {
+    paddingHorizontal: 15,
+    color: '#777',
+    fontSize: width * 0.035,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    height: height * 0.065,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginBottom: height * 0.03,
+  },
+  googleIcon: {
+    width: 32,
+    height: 22,
+    marginRight: 10,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontSize: width * 0.04,
+    fontWeight: '500',
   },
   loginContainer: {
     flexDirection: 'row',

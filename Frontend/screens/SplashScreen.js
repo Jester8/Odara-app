@@ -1,21 +1,22 @@
-import React, {useEffect} from "react";
-import { View, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect } from "react";
+import { View, Image, StyleSheet } from 'react-native';
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       navigation.replace('GetStarted'); 
-    }, 5000); 
+    }, 10000); 
+
+    return () => clearTimeout(timer); 
   }, []);
 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/logo/logo.png')}
+        source={require('../assets/logo/white.png')}
         style={styles.logo}
         resizeMode="contain"
       />
-      <ActivityIndicator size="large" color="#4B0082" style={styles.spinner} />
     </View>
   );
 };
@@ -25,15 +26,12 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#4B0082',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
-    width: 150,
+    width: 250,
     height: 200,
-  },
-  spinner: {
-    marginTop: 20,
   },
 });

@@ -14,6 +14,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import axios from 'axios';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,11 +26,33 @@ const LoginScreen = ({ navigation }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const handleLogin = () => {
- 
-    console.log('Login with:', email, password);
- 
-  };
+ const handleLogin = async () => {
+  try {
+    const response = await axios.post('http://192.168.0.2:5000/api/auth/login', {
+      email,
+      password,
+    });
+
+    if (response.data?.token) {
+      if (rememberMe) {
+        await AsyncStorage.setItem('userToken', response.data.token);
+      }
+
+      Alert.alert('Success', 'Login successful', [
+        { text: 'OK', onPress: () => navigation.navigate('navigation') },
+      ]);
+    } else {
+      Alert.alert('Login Failed', 'Invalid server response');
+    }
+  } catch (error) {
+    console.log('Login error:', error);
+    Alert.alert(
+      'Login Failed',
+      error.response?.data?.message || 'Network error. Please try again.'
+    );
+  }
+};
+
 
   const handleGoogleLogin = () => {
     // Implement Google login logic

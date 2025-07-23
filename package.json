@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "react-native-device-info": "^14.0.4",
+    "react-native-responsive-dimensions": "^3.1.1",
+    "react-native-responsive-fontsize": "^0.5.1",
+    "react-native-size-matters": "^0.4.2"
+  }
+}
