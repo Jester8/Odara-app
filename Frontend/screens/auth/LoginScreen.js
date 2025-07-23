@@ -28,7 +28,7 @@ const LoginScreen = ({ navigation }) => {
 
  const handleLogin = async () => {
   try {
-    const response = await axios.post('http://192.168.0.2:5000/api/auth/login', {
+    const response = await axios.post('https://odara-app.onrender.com/api/auth/login', {
       email,
       password,
     });

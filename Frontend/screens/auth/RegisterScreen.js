@@ -193,7 +193,7 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     try {
-       const response = await axios.post('http://192.168.0.2:5000/api/auth/register', userData);
+       const response = await axios.post('https://odara-app.onrender.com/api/auth/register', userData);
 
       
       console.log('Registration success:', response.data);

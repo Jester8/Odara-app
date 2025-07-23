@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native'; // ✅ added for navigation
+import { useNavigation } from '@react-navigation/native'; 
 
 const { width } = Dimensions.get('window');
 
