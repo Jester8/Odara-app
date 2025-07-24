@@ -8,12 +8,16 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
-      "distribution": "internal",
-      "env": {
-        "API_URL": "https://odara-app.onrender.com/api/auth"
-      }
-    },
+"preview": {
+  "distribution": "internal",
+  "android": {
+    "buildType": "apk"
+  },
+  "env": {
+    "API_URL": "https://odara-app.onrender.com/api/auth"
+  }
+},
+
     "production": {
       "android": {
         "buildType": "apk"
