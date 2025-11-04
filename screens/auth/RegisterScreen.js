@@ -31,6 +31,18 @@ SplashScreen.preventAutoHideAsync();
 const { width, height } = Dimensions.get('window');
 let debounceTimer;
 
+// Responsive scaling function
+const getResponsiveSize = (basePhone, baseTablet) => {
+  const isTablet = width >= 768;
+  const scale = isTablet ? baseTablet : basePhone;
+  return scale;
+};
+
+// Unified responsive value function
+const getScaledValue = (phoneValue, tabletValue) => {
+  return width >= 768 ? tabletValue : phoneValue;
+};
+
 const RegisterScreen = ({ navigation }) => {
   const [fontsLoaded] = useFonts({
     BricolageGrotesque_400Regular,
@@ -209,27 +221,30 @@ const RegisterScreen = ({ navigation }) => {
 
   if (!fontsLoaded) return null;
 
+  // Get responsive styles
+  const responsiveStyles = getResponsiveStyles();
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.headerContainer}>
+        <ScrollView contentContainerStyle={responsiveStyles.scrollContent}>
+          <View style={responsiveStyles.headerContainer}>
             <View style={styles.logoContainer}>
-              <Image source={require('../../assets/logo/logo.png')} style={styles.logo} resizeMode="contain" />
+              <Image source={require('../../assets/logo/logo.png')} style={responsiveStyles.logo} resizeMode="contain" />
             </View>
           </View>
 
-          <View style={styles.formContainer}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started with Odara.</Text>
+          <View style={responsiveStyles.formContainer}>
+            <Text style={responsiveStyles.title}>Create Account</Text>
+            <Text style={responsiveStyles.subtitle}>Sign up to get started with Odara.</Text>
 
             {/* First Name */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>First Name</Text>
-              <View style={[styles.inputWrapper, errors.firstName ? styles.inputError : null]}>
-                <Feather name="user" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>First Name</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.firstName ? styles.inputError : null]}>
+                <Feather name="user" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="First Name"
                   placeholderTextColor="#555"
                   value={firstName}
@@ -237,16 +252,16 @@ const RegisterScreen = ({ navigation }) => {
                   autoCapitalize="words"
                 />
               </View>
-              {errors.firstName ? <Text style={styles.errorText}>{errors.firstName}</Text> : null}
+              {errors.firstName ? <Text style={responsiveStyles.errorText}>{errors.firstName}</Text> : null}
             </View>
 
             {/* Last Name */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Last Name</Text>
-              <View style={[styles.inputWrapper, errors.lastName ? styles.inputError : null]}>
-                <Feather name="user" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Last Name</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.lastName ? styles.inputError : null]}>
+                <Feather name="user" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="Last Name"
                   placeholderTextColor="#555"
                   value={lastName}
@@ -254,16 +269,16 @@ const RegisterScreen = ({ navigation }) => {
                   autoCapitalize="words"
                 />
               </View>
-              {errors.lastName ? <Text style={styles.errorText}>{errors.lastName}</Text> : null}
+              {errors.lastName ? <Text style={responsiveStyles.errorText}>{errors.lastName}</Text> : null}
             </View>
 
             {/* Phone Number */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <View style={[styles.inputWrapper, errors.phoneNumber ? styles.inputError : null]}>
-                <Feather name="phone" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Phone Number</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.phoneNumber ? styles.inputError : null]}>
+                <Feather name="phone" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="Phone Number"
                   placeholderTextColor="#555"
                   keyboardType="phone-pad"
@@ -272,19 +287,19 @@ const RegisterScreen = ({ navigation }) => {
                 />
                 {checkingPhone && <ActivityIndicator size="small" color="#1c0032" />}
               </View>
-              {phoneStatus === "available" && <Text style={{ color: "green" }}>✅ Phone available</Text>}
-              {phoneStatus === "taken" && <Text style={{ color: "red" }}>❌ Phone already registered</Text>}
-              {errors.phoneNumber ? <Text style={styles.errorText}>{errors.phoneNumber}</Text> : null}
+              {phoneStatus === "available" && <Text style={responsiveStyles.statusText}>✅ Phone available</Text>}
+              {phoneStatus === "taken" && <Text style={responsiveStyles.statusTextError}>❌ Phone already registered</Text>}
+              {errors.phoneNumber ? <Text style={responsiveStyles.errorText}>{errors.phoneNumber}</Text> : null}
             </View>
 
             {/* Date of Birth */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Date of Birth</Text>
-              <TouchableOpacity style={[styles.inputWrapper, errors.dateOfBirth ? styles.inputError : null]} onPress={() => setDatePickerVisibility(true)}>
-                <Feather name="calendar" size={20} color="#999" style={styles.inputIcon} />
-                <Text style={styles.input}>{formatDate(dateOfBirth)}</Text>
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Date of Birth</Text>
+              <TouchableOpacity style={[responsiveStyles.inputWrapper, errors.dateOfBirth ? styles.inputError : null]} onPress={() => setDatePickerVisibility(true)}>
+                <Feather name="calendar" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
+                <Text style={responsiveStyles.input}>{formatDate(dateOfBirth)}</Text>
               </TouchableOpacity>
-              {errors.dateOfBirth ? <Text style={styles.errorText}>{errors.dateOfBirth}</Text> : null}
+              {errors.dateOfBirth ? <Text style={responsiveStyles.errorText}>{errors.dateOfBirth}</Text> : null}
             </View>
             <DateTimePickerModal
               isVisible={isDatePickerVisible}
@@ -297,12 +312,12 @@ const RegisterScreen = ({ navigation }) => {
             />
 
             {/* Email */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <View style={[styles.inputWrapper, errors.email ? styles.inputError : null]}>
-                <Feather name="mail" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Email Address</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.email ? styles.inputError : null]}>
+                <Feather name="mail" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="Email Address"
                   placeholderTextColor="#555"
                   keyboardType="email-address"
@@ -312,18 +327,18 @@ const RegisterScreen = ({ navigation }) => {
                 />
                 {checkingEmail && <ActivityIndicator size="small" color="#1c0032" />}
               </View>
-              {emailStatus === "available" && <Text style={{ color: "green" }}>✅ Email available</Text>}
-              {emailStatus === "taken" && <Text style={{ color: "red" }}>❌ Email already registered</Text>}
-              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+              {emailStatus === "available" && <Text style={responsiveStyles.statusText}>✅ Email available</Text>}
+              {emailStatus === "taken" && <Text style={responsiveStyles.statusTextError}>❌ Email already registered</Text>}
+              {errors.email ? <Text style={responsiveStyles.errorText}>{errors.email}</Text> : null}
             </View>
 
             {/* Password */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <View style={[styles.inputWrapper, errors.password ? styles.inputError : null]}>
-                <Feather name="lock" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Password</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.password ? styles.inputError : null]}>
+                <Feather name="lock" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="Create password"
                   placeholderTextColor="#555"
                   secureTextEntry={!passwordVisible}
@@ -331,19 +346,19 @@ const RegisterScreen = ({ navigation }) => {
                   onChangeText={setPassword}
                 />
                 <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.eyeIcon}>
-                  <Feather name={passwordVisible ? "eye" : "eye-off"} size={20} color="#999" />
+                  <Feather name={passwordVisible ? "eye" : "eye-off"} size={responsiveStyles.iconSize} color="#999" />
                 </TouchableOpacity>
               </View>
-              {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+              {errors.password ? <Text style={responsiveStyles.errorText}>{errors.password}</Text> : null}
             </View>
 
             {/* Confirm Password */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View style={[styles.inputWrapper, errors.confirmPassword ? styles.inputError : null]}>
-                <Feather name="lock" size={20} color="#999" style={styles.inputIcon} />
+            <View style={responsiveStyles.inputContainer}>
+              <Text style={responsiveStyles.inputLabel}>Confirm Password</Text>
+              <View style={[responsiveStyles.inputWrapper, errors.confirmPassword ? styles.inputError : null]}>
+                <Feather name="lock" size={responsiveStyles.iconSize} color="#999" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={responsiveStyles.input}
                   placeholder="Confirm password"
                   placeholderTextColor="#555"
                   secureTextEntry={!confirmPasswordVisible}
@@ -351,60 +366,60 @@ const RegisterScreen = ({ navigation }) => {
                   onChangeText={setConfirmPassword}
                 />
                 <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.eyeIcon}>
-                  <Feather name={confirmPasswordVisible ? "eye" : "eye-off"} size={20} color="#999" />
+                  <Feather name={confirmPasswordVisible ? "eye" : "eye-off"} size={responsiveStyles.iconSize} color="#999" />
                 </TouchableOpacity>
               </View>
-              {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
+              {errors.confirmPassword ? <Text style={responsiveStyles.errorText}>{errors.confirmPassword}</Text> : null}
             </View>
 
             {/* Terms */}
-            <View style={styles.termsContainer}>
+            <View style={responsiveStyles.termsContainer}>
               <TouchableOpacity style={styles.checkboxContainer} onPress={() => setAgreeToTerms(!agreeToTerms)}>
                 <View style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}>
-                  {agreeToTerms && <Feather name="check" size={14} color="#fff" />}
+                  {agreeToTerms && <Feather name="check" size={responsiveStyles.checkboxIconSize} color="#fff" />}
                 </View>
-                <Text style={styles.checkboxLabel}>
+                <Text style={responsiveStyles.checkboxLabel}>
                   I agree to the <Text style={styles.termsLink}>Terms & Conditions</Text> and <Text style={styles.termsLink}>Privacy Policy</Text>
                 </Text>
               </TouchableOpacity>
-              {errors.terms ? <Text style={styles.errorText}>{errors.terms}</Text> : null}
+              {errors.terms ? <Text style={responsiveStyles.errorText}>{errors.terms}</Text> : null}
             </View>
 
             {/* Sign Up Button */}
             <TouchableOpacity 
-              style={[styles.signUpButton, loading && { opacity: 0.7 }]} 
+              style={[responsiveStyles.signUpButton, loading && { opacity: 0.7 }]} 
               onPress={handleSignUp}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.signUpButtonText}>Create Account</Text>
+                <Text style={responsiveStyles.signUpButtonText}>Create Account</Text>
               )}
             </TouchableOpacity>
 
             {/* Divider */}
-            <View style={styles.orContainer}>
+            <View style={responsiveStyles.orContainer}>
               <View style={styles.divider} />
-              <Text style={styles.orText}>OR</Text>
+              <Text style={responsiveStyles.orText}>OR</Text>
               <View style={styles.divider} />
             </View>
 
             {/* Google Sign Up */}
-            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
+            <TouchableOpacity style={responsiveStyles.googleButton} onPress={handleGoogleSignUp}>
               <Image 
                 source={require('../../assets/logo/google.webp')} 
-                style={styles.googleIcon}
+                style={responsiveStyles.googleIcon}
                 resizeMode="contain"
               />
-              <Text style={styles.googleButtonText}>Continue with Google</Text>
+              <Text style={responsiveStyles.googleButtonText}>Continue with Google</Text>
             </TouchableOpacity>
 
             {/* Sign In Link */}
             <View style={styles.signInContainer}>
-              <Text style={styles.signInText}>Have an account? </Text>
+              <Text style={responsiveStyles.signInText}>Have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text style={styles.signInLink}>Sign in</Text>
+                <Text style={responsiveStyles.signInLink}>Sign in</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -414,41 +429,178 @@ const RegisterScreen = ({ navigation }) => {
   );
 };
 
+// Responsive styles function
+const getResponsiveStyles = () => {
+  const isTablet = width >= 768;
+  
+  return {
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: isTablet ? width * 0.08 : width * 0.05,
+      paddingBottom: 30,
+      maxWidth: isTablet ? 900 : '100%',
+      alignSelf: 'center',
+      width: '100%'
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingTop: isTablet ? height * 0.03 : height * 0.02,
+      paddingBottom: isTablet ? height * 0.03 : height * 0.02,
+      justifyContent: 'center'
+    },
+    logo: {
+      width: isTablet ? width * 0.25 : width * 0.35,
+      height: isTablet ? width * 0.1 : width * 0.15
+    },
+    formContainer: {
+      paddingVertical: isTablet ? height * 0.04 : height * 0.02,
+      backgroundColor: '#fff',
+      paddingHorizontal: isTablet ? width * 0.06 : width * 0.04,
+      borderRadius: isTablet ? 16 : 8
+    },
+    title: {
+      fontSize: isTablet ? 28 : 20,
+      fontWeight: 'bold',
+      color: '#1a1a2e',
+      marginBottom: isTablet ? 12 : 6,
+      fontFamily: 'BricolageGrotesque_700Bold'
+    },
+    subtitle: {
+      fontSize: isTablet ? 15 : 12,
+      color: '#999',
+      marginBottom: isTablet ? 28 : 15,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    inputContainer: {
+      marginBottom: isTablet ? height * 0.025 : height * 0.02
+    },
+    inputLabel: {
+      fontSize: isTablet ? 13 : 11,
+      color: '#333',
+      marginBottom: 6,
+      fontWeight: '500',
+      fontFamily: 'BricolageGrotesque_500Medium'
+    },
+    inputWrapper: {
+      flexDirection: 'row',
+      backgroundColor: '#fff',
+      borderRadius: isTablet ? 14 : width * 0.025,
+      paddingHorizontal: isTablet ? 18 : width * 0.03,
+      height: isTablet ? 62 : 50,
+      alignItems: 'center',
+      borderWidth: 1.2,
+      borderColor: isTablet ? '#e0e0e0' : '#1c0032'
+    },
+    input: {
+      flex: 1,
+      fontSize: isTablet ? 13 : 12,
+      color: '#333',
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    iconSize: isTablet ? 28 : 20,
+    checkboxIconSize: isTablet ? 18 : 14,
+    errorText: {
+      color: '#e74c3c',
+      fontSize: isTablet ? 11 : 10,
+      marginTop: 4,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    statusText: {
+      color: 'green',
+      fontSize: isTablet ? 11 : 10,
+      marginTop: 4,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    statusTextError: {
+      color: 'red',
+      fontSize: isTablet ? 11 : 10,
+      marginTop: 4,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    termsContainer: {
+      marginBottom: isTablet ? height * 0.03 : height * 0.025
+    },
+    checkboxLabel: {
+      fontSize: isTablet ? 12 : 10,
+      color: '#333',
+      flex: 1,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    signUpButton: {
+      backgroundColor: '#1c0032',
+      height: isTablet ? 56 : 50,
+      borderRadius: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: isTablet ? height * 0.03 : height * 0.025
+    },
+    signUpButtonText: {
+      color: '#fff',
+      fontSize: isTablet ? 15 : 14,
+      fontWeight: '600',
+      fontFamily: 'BricolageGrotesque_600SemiBold'
+    },
+    orContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: isTablet ? height * 0.025 : height * 0.02
+    },
+    orText: {
+      paddingHorizontal: 15,
+      color: '#777',
+      fontSize: isTablet ? 12 : 10,
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    googleButton: {
+      flexDirection: 'row',
+      height: isTablet ? 62 : 50,
+      borderWidth: 1.2,
+      borderColor: isTablet ? '#e0e0e0' : '#1c0032',
+      borderRadius: isTablet ? 14 : 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      marginBottom: isTablet ? height * 0.04 : height * 0.03
+    },
+    googleIcon: {
+      width: isTablet ? 42 : 32,
+      height: isTablet ? 32 : 22,
+      marginRight: 10
+    },
+    googleButtonText: {
+      color: '#333',
+      fontSize: isTablet ? 14 : 12,
+      fontWeight: '500',
+      fontFamily: 'BricolageGrotesque_500Medium'
+    },
+    signInText: {
+      fontSize: isTablet ? 13 : 12,
+      color: '#666',
+      fontFamily: 'BricolageGrotesque_400Regular'
+    },
+    signInLink: {
+      fontSize: isTablet ? 13 : 12,
+      color: '#1c0032',
+      fontWeight: '600',
+      fontFamily: 'BricolageGrotesque_600SemiBold'
+    }
+  };
+};
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   keyboardAvoidingView: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingHorizontal: width * 0.05, paddingBottom: 20 },
-  headerContainer: { flexDirection: 'row', alignItems: 'center', paddingTop: height * 0.02, paddingBottom: height * 0.02, justifyContent: 'center' },
   logoContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  logo: { width: width * 0.35, height: width * 0.15 },
-  formContainer: { paddingVertical: height * 0.02, backgroundColor: '#fff', paddingHorizontal: width * 0.04, borderRadius: 8 },
-  title: { fontSize: width * 0.07, fontWeight: 'bold', color: '#1a1a2e', marginBottom: height * 0.01, fontFamily: 'BricolageGrotesque_700Bold' },
-  subtitle: { fontSize: width * 0.04, color: '#666', marginBottom: height * 0.03, fontFamily: 'BricolageGrotesque_400Regular' },
-  inputContainer: { marginBottom: height * 0.02 },
-  inputLabel: { fontSize: width * 0.04, color: '#333', marginBottom: 8, fontWeight: '500', fontFamily: 'BricolageGrotesque_500Medium' },
-  inputWrapper: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: width * 0.025, paddingHorizontal: width * 0.03, height: 50, alignItems: 'center', borderWidth: 0.4, borderColor: '#1c0032' },
   inputIcon: { marginRight: 10 },
-  input: { flex: 1, fontSize: width * 0.04, color: '#333', fontFamily: 'BricolageGrotesque_400Regular' },
   eyeIcon: { padding: 5 },
   inputError: { borderColor: '#e74c3c', borderWidth: 1 },
-  errorText: { color: '#e74c3c', fontSize: width * 0.035, marginTop: 5, fontFamily: 'BricolageGrotesque_400Regular' },
-  termsContainer: { marginBottom: height * 0.025 },
-  checkboxContainer: { flexDirection: 'row', alignItems: 'center' },
   checkbox: { width: 22, height: 22, borderWidth: 1, borderColor: '#ccc', borderRadius: 5, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
   checkboxChecked: { backgroundColor: '#1c0032', borderColor: '#1c0032' },
-  checkboxLabel: { fontSize: width * 0.035, color: '#333', flex: 1, fontFamily: 'BricolageGrotesque_400Regular' },
   termsLink: { color: '#1c0032', fontWeight: '500', fontFamily: 'BricolageGrotesque_600SemiBold' },
-  signUpButton: { backgroundColor: '#1c0032', height: height * 0.065, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: height * 0.025 },
-  signUpButtonText: { color: '#fff', fontSize: width * 0.045, fontWeight: '600', fontFamily: 'BricolageGrotesque_600SemiBold' },
-  orContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: height * 0.02 },
   divider: { flex: 1, height: 1, backgroundColor: '#ddd' },
-  orText: { paddingHorizontal: 15, color: '#777', fontSize: width * 0.035, fontFamily: 'BricolageGrotesque_400Regular' },
-  googleButton: { flexDirection: 'row', height: height * 0.065, borderWidth: 0.4, borderColor: '#1c0032', borderRadius: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', marginBottom: height * 0.03 },
-  googleIcon: { width: 32, height: 22, marginRight: 10 },
-  googleButtonText: { color: '#333', fontSize: width * 0.04, fontWeight: '500', fontFamily: 'BricolageGrotesque_500Medium' },
-  signInContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  signInText: { fontSize: width * 0.04, color: '#666', fontFamily: 'BricolageGrotesque_400Regular' },
-  signInLink: { fontSize: width * 0.04, color: '#1c0032', fontWeight: '600', fontFamily: 'BricolageGrotesque_600SemiBold' }
+  checkboxContainer: { flexDirection: 'row', alignItems: 'center' },
+  signInContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }
 });
 
 export default RegisterScreen;

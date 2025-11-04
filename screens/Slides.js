@@ -198,6 +198,9 @@ const Slides = ({ navigation }) => {
 
       <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
         <Text style={styles.skipText}>Skip</Text>
+        <View style={styles.skipIcon}>
+          <View style={styles.skipIconArrow} />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -287,11 +290,31 @@ const styles = StyleSheet.create({
     right: 20,
     padding: 10,
     zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   skipText: {
     fontSize: 16,
     fontFamily: 'BricolageGrotesque_600SemiBold',
     color: '#fff',
     opacity: 0.9,
+  },
+  skipIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 50,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  skipIconArrow: {
+    width: 10,
+    height: 10,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: '#000',
+    borderRightColor: '#000',
+    transform: [{ rotate: '45deg' }],
   },
 });

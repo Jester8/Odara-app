@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
+const BOX_SIZE = width / 8;
 
 export default function ResetOtpScreen() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -61,7 +62,7 @@ export default function ResetOtpScreen() {
       console.log('📧 Verifying reset OTP for email:', email);
       
       const response = await fetch(
-        'https://odara-app.onrender.com/api/auth/verify-otp',
+        'https://odara-app.onrender.com/api/auth/verify-reset-otp',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -69,8 +70,18 @@ export default function ResetOtpScreen() {
         }
       );
 
-      const data = await response.json();
-      console.log('📊 Response:', data);
+      const responseText = await response.text();
+      console.log('📊 Raw Response:', responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ JSON Parse Error:', parseError);
+        console.error('Response was:', responseText);
+        throw parseError;
+      }
+      console.log('📊 Parsed Response:', data);
 
       if (response.ok && data.success) {
         setShowSuccessModal(true);
@@ -136,8 +147,8 @@ export default function ResetOtpScreen() {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <View style={styles.successIconContainer}>
-            <Ionicons name="checkmark-circle" size={width * 0.2} color="#1c0032" />
+          <View style={styles.iconContainer}>
+            <Ionicons name="checkmark-circle" size={80} color="#1c0032" />
           </View>
           <Text style={styles.modalTitle}>Code Verified!</Text>
           <Text style={styles.modalMessage}>
@@ -153,82 +164,78 @@ export default function ResetOtpScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : null}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <View style={styles.headerContainer}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()} 
-            style={styles.backButton}
-            disabled={loading}
-          >
-            <Ionicons name="chevron-back" size={28} color="#1c0032" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Verify Your Code</Text>
-          <View style={styles.spacer} />
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backArrow}
+          onPress={() => navigation.goBack()} 
+          disabled={loading}
+        >
+          <Ionicons name="chevron-back" size={28} color="#1c0032" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.centerContent}>
+        <Text style={styles.title}>VERIFY YOUR CODE</Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          Kindly enter the 6-digit code sent to {email}
+        </Text>
+
+        <View style={styles.codeInputContainer}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => (inputRefs.current[index] = ref)}
+              style={[
+                styles.input,
+                error && styles.inputError,
+              ]}
+              maxLength={1}
+              keyboardType="number-pad"
+              value={digit}
+              onChangeText={(text) => handleChange(text, index)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+              editable={!loading}
+              placeholder="-"
+              placeholderTextColor="#ccc"
+            />
+          ))}
         </View>
 
-        <View style={styles.contentContainer}>
-          <Text style={styles.subtitle}>
-            Enter the 6-digit code sent to {email}
-          </Text>
-
-          <View style={styles.otpContainer}>
-            {otp.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => (inputRefs.current[index] = ref)}
-                style={[
-                  styles.otpBox,
-                  error && styles.otpBoxError,
-                  digit && styles.otpBoxFilled
-                ]}
-                maxLength={1}
-                keyboardType="numeric"
-                value={digit}
-                onChangeText={(text) => handleChange(text, index)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
-                editable={!loading}
-                placeholder="-"
-                placeholderTextColor="#ccc"
-              />
-            ))}
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={18} color="#e74c3c" />
+            <Text style={styles.errorText}>{error}</Text>
           </View>
+        ) : null}
 
-          {error ? (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={18} color="#e74c3c" />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
+        <Text style={styles.infoText}>
+          <Text style={styles.asterisk}>* </Text>
+          Make sure to check your spam folder if you don't see the email.
+        </Text>
 
-          <Text style={styles.note}>
-            <Text style={styles.redText}>* </Text>
-            Check your spam folder if you don't see the email.
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Verify Code</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.resendContainer}
+          onPress={handleResendOtp}
+          disabled={loading}
+        >
+          <Text style={styles.resendText}>
+            Didn't receive the code?{' '}
+            <Text style={styles.resendLink}>Resend</Text>
           </Text>
-
-          <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.submitText}>Verify Code</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.resendContainer}
-            onPress={handleResendOtp}
-            disabled={loading}
-          >
-            <Text style={styles.resendText}>
-              Didn't receive the code?{' '}
-              <Text style={styles.resendLink}>Resend</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </TouchableOpacity>
+      </View>
 
       <SuccessModal />
     </KeyboardAvoidingView>
@@ -238,110 +245,114 @@ export default function ResetOtpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9fa',
+    backgroundColor: '#fff',
   },
-  scrollView: {
-    flexGrow: 1,
-  },
-  headerContainer: {
-    flexDirection: 'row',
+  header: {
+    height: 65,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.02,
-    marginTop: Platform.OS === 'ios' ? height * 0.02 : 0,
+    marginTop: Platform.OS === 'ios' ? 70 : 50,
+    marginBottom: 50,
   },
-  backButton: {
-    padding: 8,
+  backArrow: {
+    position: 'absolute',
+    left: 15,
+    top: '50%',
+    marginTop: -14,
+    zIndex: 10,
   },
-  headerTitle: {
-    fontSize: width * 0.05,
-    fontWeight: 'bold',
-    color: '#1c0032',
-    flex: 1,
+  centerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    marginTop: -30,
+  },
+  title: {
+    fontSize: 22,
+    color: '#000',
     textAlign: 'center',
-  },
-  spacer: {
-    width: 28,
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.02,
+    marginTop: -64,
+    fontWeight: 'bold',
   },
   subtitle: {
-    fontSize: width * 0.035,
-    color: '#666',
-    marginBottom: height * 0.04,
+    fontSize: 15,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 25,
+    paddingHorizontal: 40,
   },
-  otpContainer: {
+  codeInputContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: height * 0.03,
+    marginBottom: 15,
+    width: '90%',
   },
-  otpBox: {
-    width: width * 0.12,
-    height: width * 0.12,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderRadius: 8,
+  input: {
+    width: BOX_SIZE,
+    height: BOX_SIZE,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
     textAlign: 'center',
-    fontSize: width * 0.05,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#000',
-    backgroundColor: '#fff',
+    color: '#2e0338ff',
+    backgroundColor: '#ffffffff',
   },
-  otpBoxFilled: {
-    borderColor: '#1c0032',
-    backgroundColor: '#fff',
-  },
-  otpBoxError: {
+  inputError: {
     borderColor: '#e74c3c',
-    backgroundColor: '#fff5f5',
+    backgroundColor: '#ffe6e6',
   },
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffe6e6',
-    padding: width * 0.03,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginBottom: height * 0.02,
+    marginBottom: 15,
+    width: '90%',
   },
   errorText: {
-    fontSize: width * 0.03,
     color: '#e74c3c',
+    fontSize: 13,
     marginLeft: 8,
     flex: 1,
   },
-  redText: {
+  infoText: {
+    color: '#777',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 25,
+    paddingHorizontal: 12,
+  },
+  asterisk: {
     color: 'red',
   },
-  note: {
-    fontSize: width * 0.03,
-    color: '#999',
-    marginBottom: height * 0.04,
-    textAlign: 'center',
-  },
-  submitButton: {
-    backgroundColor: '#1c0032',
-    paddingVertical: height * 0.02,
-    borderRadius: width * 0.025,
+  button: {
+    backgroundColor: '#1c002c',
+    paddingVertical: 16,
+    paddingHorizontal: 90,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: height * 0.02,
+    justifyContent: 'center',
+    marginBottom: 15,
+    width: width * 0.75,
+    minHeight: 52,
   },
-  submitButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.6,
   },
-  submitText: {
+  buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: width * 0.045,
+    fontSize: 18,
+    fontWeight: '600',
   },
   resendContainer: {
-    alignItems: 'center',
+    marginTop: 10,
   },
   resendText: {
-    fontSize: width * 0.03,
+    fontSize: 14,
     color: '#666',
   },
   resendLink: {
@@ -361,17 +372,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: width * 0.8,
   },
-  successIconContainer: {
-    marginBottom: height * 0.02,
+  iconContainer: {
+    marginBottom: 16,
   },
   modalTitle: {
-    fontSize: width * 0.06,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1c0032',
-    marginBottom: height * 0.01,
+    marginBottom: 8,
   },
   modalMessage: {
-    fontSize: width * 0.035,
+    fontSize: 16,
     color: '#666',
     textAlign: 'center',
   },
