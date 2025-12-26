@@ -18,10 +18,13 @@ import {
   BricolageGrotesque_700Bold,
 } from '@expo-google-fonts/bricolage-grotesque';
 import * as SplashScreen from 'expo-splash-screen';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 SplashScreen.preventAutoHideAsync();
 
 const { width, height } = Dimensions.get('window');
+
+const isTablet = width > 768;
 
 const GetStarted = () => {
   const navigation = useNavigation();
@@ -101,13 +104,25 @@ const GetStarted = () => {
               Find it here, buy it now!
             </Text>
 
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            {/* 🟣 Button moved up on tablet only */}
+            <Animated.View 
+              style={[
+                { transform: [{ scale: buttonScale }] },
+                styles.buttonWrapper
+              ]}
+            >
               <TouchableOpacity 
                 style={styles.button} 
                 activeOpacity={0.8} 
                 onPress={handlePress}
               >
                 <Text style={styles.buttonText}>Get Started</Text>
+                <MaterialCommunityIcons 
+                  name="arrow-right" 
+                  size={20} 
+                  color="#fff" 
+                  style={styles.arrowIcon}
+                />
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>
@@ -120,7 +135,7 @@ const GetStarted = () => {
 export default GetStarted;
 
 const styles = StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
   },
   image: {
@@ -137,30 +152,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-end',
-    paddingBottom: 20, 
+    paddingBottom: isTablet ? 60 : 40,
     paddingHorizontal: 30,
   },
   content: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: isTablet ? 80 : 20,
   },
+
+
+  buttonWrapper: {
+    marginBottom: isTablet ? 60 : 0,
+  },
+
   title: {
-    fontSize: 32,
+    fontSize: isTablet ? 32 : 23,
     color: '#fff',
     fontFamily: 'BricolageGrotesque_700Bold',
     textAlign: 'center',
-    lineHeight: 38,
-    marginBottom: 12,
+    lineHeight: isTablet ? 50 : 38,
+    marginBottom: isTablet ? 20 : 12,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: isTablet ? 28 : 20,
     color: '#f2f2f2',
     fontFamily: 'BricolageGrotesque_400Regular',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: isTablet ? 50 : 30,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
@@ -168,18 +189,24 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#1a0231ff',
     paddingVertical: 18,
-    paddingHorizontal: 90,
-    borderRadius: 30,
+    paddingHorizontal: isTablet ? 190 : 90,
+    borderRadius: 40,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: isTablet ? 20 : 18,
     color: '#fff',
     fontFamily: 'BricolageGrotesque_600SemiBold',
     letterSpacing: 0.5,
+  },
+  arrowIcon: {
+    marginLeft: 10,
   },
 });

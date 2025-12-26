@@ -18,7 +18,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
-const BOX_SIZE = width / 8;
+const isTablet = width > 768;
+const BOX_SIZE = isTablet ? width / 10 : width / 8;
 
 const Confirm = () => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -105,7 +106,7 @@ const Confirm = () => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.iconContainer}>
-            <Ionicons name="checkmark-circle" size={80} color="#1c0032" />
+            <Ionicons name="checkmark-circle" size={isTablet ? 100 : 80} color="#1c0032" />
           </View>
           <Text style={styles.modalTitle}>Email Verified!</Text>
           <Text style={styles.modalMessage}>
@@ -129,7 +130,7 @@ const Confirm = () => {
             onPress={() => navigation.goBack()}
             disabled={loading}
           >
-            <Ionicons name="chevron-back" size={28} color="#1c0032" />
+            <Ionicons name="chevron-back" size={isTablet ? 36 : 28} color="#1c0032" />
           </TouchableOpacity>
         </View>
 
@@ -209,11 +210,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    height: 65,
+    height: isTablet ? 85 : 65,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 40 : 30,
-    marginBottom: 50,
+    marginTop: Platform.OS === 'ios' ? (isTablet ? 50 : 40) : (isTablet ? 40 : 30),
+    marginBottom: isTablet ? 60 : 50,
   },
   backArrow: {
     position: 'absolute',
@@ -225,27 +226,27 @@ const styles = StyleSheet.create({
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginTop: -30,
+    paddingHorizontal: isTablet ? 40 : 20,
+    marginTop: isTablet ? -40 : -30,
   },
   title: {
-    fontSize: 22,
+    fontSize: isTablet ? 28 : 22,
     color: '#000',
     textAlign: 'center',
-    marginTop: -64,
+    marginTop: -65,
     fontWeight: 'bold',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: isTablet ? 16 : 12,
     color: '#555',
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: isTablet ? 35 : 25,
     paddingHorizontal: 15,
   },
   codeInputContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: isTablet ? 25 : 15,
     width: '90%',
   },
   input: {
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     textAlign: 'center',
-    fontSize: 22,
+    fontSize: isTablet ? 28 : 22,
     fontWeight: 'bold',
     color: '#2e0338ff',
     backgroundColor: '#ffffffff',
@@ -280,15 +281,15 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#e74c3c',
-    fontSize: 13,
+    fontSize: isTablet ? 15 : 13,
     marginLeft: 8,
     flex: 1,
   },
   infoText: {
     color: '#777',
-    fontSize: 14,
+    fontSize: isTablet ? 16 : 12,
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: isTablet ? 35 : 25,
     paddingHorizontal: 12,
   },
   asterisk: {
@@ -296,30 +297,30 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#1c002c',
-    paddingVertical: 16,
-    paddingHorizontal: 90,
-    borderRadius: 10,
+    paddingVertical: isTablet ? 20 : 16,
+    paddingHorizontal: isTablet ? 120 : 120,
+    borderRadius: 25,
     alignItems: 'center',
     marginBottom: 15,
   },
   buttonDisabled: {
     opacity: 0.6,
-     paddingVertical: 16,
-    paddingHorizontal: 90,
-    borderRadius: 10,
+   paddingVertical: isTablet ? 20 : 16,
+    paddingHorizontal: isTablet ? 120 : 150,
+    borderRadius: 25,
     alignItems: 'center',
     marginBottom: 15,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: isTablet ? 20 : 15,
     fontWeight: '600',
   },
   resendContainer: {
     marginTop: 10,
   },
   resendText: {
-    fontSize: 14,
+    fontSize: isTablet ? 16 : 14,
     color: '#666',
   },
   resendLink: {
@@ -338,19 +339,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: width * 0.08,
     alignItems: 'center',
-    width: width * 0.8,
+    width: isTablet ? width * 0.6 : width * 0.8,
   },
   iconContainer: {
     marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: isTablet ? 28 : 24,
     fontWeight: 'bold',
     color: '#1c0032',
     marginBottom: 8,
   },
   modalMessage: {
-    fontSize: 16,
+    fontSize: isTablet ? 18 : 16,
     color: '#666',
     textAlign: 'center',
   },

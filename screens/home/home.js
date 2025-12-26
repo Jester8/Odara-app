@@ -1,248 +1,347 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
-  Animated,
   Dimensions,
   TouchableOpacity,
   Text,
-  Image,
   FlatList,
-  Platform,
+  ScrollView,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
+import {
+  useFonts,
+  BricolageGrotesque_400Regular,
+  BricolageGrotesque_500Medium,
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+} from '@expo-google-fonts/bricolage-grotesque';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
-import Search from './components/Search';
 import Product from './product/Product';
 import useAuthStore from '../src/store/useAuthStore';
 
 const { width } = Dimensions.get('window');
-
-// Categories with local paths only
-const categories = [
-  { 
-    title: 'Clothes', 
-    image: require('../../assets/Products/Clothes/male/suit3.jpg'), 
-    subcategories: ['Men', 'Women', 'Kids'] 
-  },
-  { 
-    title: 'Shoes', 
-    image: require('../../assets/Products/Sneakers/sneakers1.jpg'), 
-    subcategories: ['Men', 'Women', 'Kids'] 
-  },
-  { 
-    title: 'Jewelry', 
-    image: require('../../assets/Products/Jewelries/2.jpg'), 
-    subcategories: ['Necklaces', 'Bracelets', 'Beads'] 
-  },
-  { 
-    title: 'Art Work', 
-    image: require('../../assets/Products/art.jpg'), 
-    subcategories: ['Paintings', 'Sculptures', 'Handmade Crafts'] 
-  },
-  { 
-    title: 'Books', 
-    image: require('../../assets/Products/book.jpg'), 
-    subcategories: ['African Authors', 'Fiction', 'Non-Fiction'] 
-  },
-  { 
-    title: 'Food', 
-    image: require('../../assets/Products/food.jpg'), 
-    subcategories: ['Local Dishes', 'Spices', 'Snacks'] 
-  },
-  { 
-    title: 'Automobiles', 
-    image: require('../../assets/Products/cars.webp'), 
-    subcategories: ['Cars', 'Motorcycles', 'Spare Parts'] 
-  },
-  { 
-    title: 'Phones & Gadgets', 
-    image: require('../../assets/Products/phone.webp'), 
-    subcategories: ['Smartphones', 'Accessories', 'Wearables'] 
-  },
-  { 
-    title: 'Electronics', 
-    image: require('../../assets/Products/cars.webp'), 
-    subcategories: ['TVs', 'Audio Systems', 'Smart Devices'] 
-  },
-];
+const isTablet = width > 600;
 
 const HomeScreen = () => {
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  const [expandedCategory, setExpandedCategory] = useState(null);
   const [selectedTab, setSelectedTab] = useState('All');
-  const drawerAnim = useState(new Animated.Value(-width))[0];
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef(null);
   const navigation = useNavigation();
   const { user } = useAuthStore();
 
-  const openDrawer = () => {
-    setDrawerVisible(true);
-    Animated.timing(drawerAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
+  /* ---------- LOAD FONTS ---------- */
+  const [fontsLoaded] = useFonts({
+    BricolageGrotesque_400Regular,
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+  });
 
-  const closeDrawer = () => {
-    Animated.timing(drawerAnim, {
-      toValue: -width,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => setDrawerVisible(false));
-  };
+  const bannerSlides = [
+    {
+      id: '1',
+      image: require('../../assets/img/main.png'),
+    },
+    {
+      id: '2',
+      image: require('../../assets/img/main.png'),
+    },
+    {
+      id: '3',
+      image: require('../../assets/img/main.png'),
+    },
+  ];
 
-  const toggleCategory = (index) => {
-    setExpandedCategory(index === expandedCategory ? null : index);
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) =>
+        prevSlide === bannerSlides.length - 1 ? 0 : prevSlide + 1
+      );
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const Header = () => (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={openDrawer} style={styles.iconCircle}>
-        <MaterialIcons name="menu" size={24} color="#000" />
-      </TouchableOpacity>
+  useEffect(() => {
+    if (carouselRef.current && currentSlide !== undefined) {
+      carouselRef.current.scrollToIndex({
+        index: currentSlide,
+        animated: true,
+      });
+    }
+  }, [currentSlide]);
 
-      <Image
-        source={require('../../assets/logo/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+  const getItemLayout = (data, index) => ({
+    length: width,
+    offset: width * index,
+    index,
+  });
 
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate(user ? 'UserProfile' : 'GuestProfile')
-        }
-      >
-        <Image
-          source={require('../../assets/img/mens.png')} // Local placeholder for profile
-          style={styles.profileImage}
-        />
-      </TouchableOpacity>
-    </View>
-  );
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  const Header = () => <View style={styles.header} />;
 
   const TopTabs = () => (
-    <View style={styles.tabsContainer}>
-      {['All', 'Female', 'Male'].map((tab) => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.tabsContainer}
+      contentContainerStyle={styles.tabsContentContainer}
+    >
+      {['All', 'Women', 'Men', 'Kids', 'Home', 'Fashion', 'Arts'].map((tab) => (
         <TouchableOpacity
           key={tab}
-          style={[styles.tabButton, selectedTab === tab && styles.activeTab]}
+          style={styles.tabButton}
           onPress={() => setSelectedTab(tab)}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, selectedTab === tab && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === tab && styles.activeTabText,
+            ]}
+            numberOfLines={1}
+          >
             {tab}
           </Text>
+
+          {selectedTab === tab && <View style={styles.tabUnderline} />}
         </TouchableOpacity>
       ))}
-    </View>
+    </ScrollView>
   );
 
-  const renderDrawer = () => (
-    <Animated.View style={[styles.drawerWrapper, { left: drawerAnim }]}>
-      <View style={styles.drawer}>
-        <View style={styles.drawerHeader}>
-          <Text style={styles.drawerTitle}>All Categories</Text>
-          <TouchableOpacity onPress={closeDrawer}>
-            <MaterialIcons name="close" size={28} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Tabs */}
-        <TopTabs />
-
+  const PromoSection = () => (
+    <View style={styles.promoContainer}>
+      <View style={styles.carouselWrapper}>
         <FlatList
-          data={categories}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <View key={index}>
-              <TouchableOpacity
-                style={styles.categoryItem}
-                onPress={() => toggleCategory(index)}
-              >
-                <Image source={item.image} style={styles.categoryImage} />
-                <Text style={styles.categoryText}>{item.title}</Text>
-                <MaterialIcons
-                  name={expandedCategory === index ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-                  size={22}
-                  style={styles.chevronIcon}
-                />
-              </TouchableOpacity>
+          ref={carouselRef}
+          data={bannerSlides}
+          horizontal
+          pagingEnabled
+          scrollEventThrottle={16}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          getItemLayout={getItemLayout}
+          onScrollToIndexFailed={() => {}}
+          onMomentumScrollEnd={(event) => {
+            const index = Math.round(
+              event.nativeEvent.contentOffset.x / width
+            );
+            setCurrentSlide(index);
+          }}
+          renderItem={({ item }) => (
+            <View style={{ width: width }}>
+              <View style={styles.promoRow}>
+                <View style={styles.promoContent}>
+                  <Text style={styles.promoSubtitle}>Premium Collections</Text>
+                  <Text style={styles.promoTitle}>
+                    Shop Genuine{'\n'}African Products{'\n'}on Odara
+                  </Text>
+                  <TouchableOpacity style={styles.shopButton}>
+                    <Text style={styles.shopButtonText}>SHOP NOW →</Text>
+                  </TouchableOpacity>
+                </View>
 
-              {expandedCategory === index &&
-                item.subcategories.map((sub, subIndex) => (
-                  <View style={styles.subCategoryItem} key={subIndex}>
-                    <Text style={styles.subCategoryText}>{sub}</Text>
-                  </View>
-                ))}
+                <Image
+                  source={item.image}
+                  style={styles.promoImage}
+                  resizeMode="contain"
+                />
+              </View>
             </View>
           )}
         />
+
+        <View style={styles.dotsContainer}>
+          {bannerSlides.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.dot,
+                { opacity: currentSlide === index ? 1 : 0.4 },
+              ]}
+              onPress={() => setCurrentSlide(index)}
+            />
+          ))}
+        </View>
       </View>
-    </Animated.View>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <View style={styles.headerSection}>
+        <Header />
+
+        <View style={styles.searchSection}>
+          <View style={styles.searchInputContainer}>
+            <Text style={styles.searchText}>Search Odara</Text>
+
+            <TouchableOpacity style={styles.searchIconButton}>
+              <MaterialIcons
+                name="search"
+                size={isTablet ? 22 : 20}
+                color="#fff"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      <TopTabs />
 
       <FlatList
         data={[{ id: 'products' }]}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={<Search />}
+        ListHeaderComponent={<PromoSection />}
         renderItem={() => <Product />}
         showsVerticalScrollIndicator={false}
       />
-
-      {drawerVisible && renderDrawer()}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 10 : 0,
-  },
-  logo: { width: 100, height: 40 },
-  profileImage: { width: 30, height: 30, borderRadius: 15 },
-  iconCircle: { padding: 8 },
-  drawerWrapper: {
-    position: 'absolute', top: 0, bottom: 0, width: width,
-    backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10,
-  },
-  drawer: { width: width * 0.75, backgroundColor: '#fff', height: '100%', padding: 16 },
-  drawerHeader: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    marginBottom: 10, marginTop: 20, paddingTop: 10,
-  },
-  drawerTitle: { fontSize: 20, fontWeight: '700', color: '#000' },
 
-  tabsContainer: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 15 },
+  headerSection: { backgroundColor: '#2D1B4E', paddingBottom: 14 },
+  header: { height: isTablet ? 50 : 40 },
+
+  searchSection: { flexDirection: 'row', paddingHorizontal: 16 },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 50,
+    paddingHorizontal: 14,
+    paddingVertical: isTablet ? 14 : 7,
+    gap: 8,
+    elevation: 3,
+  },
+  searchText: {
+    fontSize: isTablet ? 15 : 14,
+    color: '#999',
+    flex: 1,
+    fontFamily: 'BricolageGrotesque_400Regular',
+  },
+
+  searchIconButton: {
+    backgroundColor: '#df7512ff',
+    width: isTablet ? 40 : 46,
+    height: isTablet ? 40 : 30,
+    borderRadius: isTablet ? 20 : 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  tabsContainer: { backgroundColor: '#2D1B4E', paddingBottom: 10 },
+  tabsContentContainer: {
+    paddingHorizontal: 12,
+    gap: isTablet ? 18 : 12,
+    paddingVertical: 6,
+  },
   tabButton: {
-    paddingVertical: 6, paddingHorizontal: 15, borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+    minWidth: isTablet ? 70 : 36,
+    alignItems: 'center',
   },
-  activeTab: { backgroundColor: '#4B0082' },
-  tabText: { fontSize: 14, color: '#000', fontWeight: '500' },
-  activeTabText: { color: '#fff' },
+  tabText: {
+    fontSize: isTablet ? 18 : 15,
+    lineHeight: isTablet ? 24 : 25,
+    color: '#fff',
+    fontFamily: 'BricolageGrotesque_500Medium',
+  },
+  activeTabText: {
+    fontFamily: 'BricolageGrotesque_600SemiBold',
+  },
+  tabUnderline: {
+    marginTop: 4,
+    height: 2,
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 2,
+  },
 
-  categoryItem: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', borderRadius: 12,
-    paddingVertical: 12, paddingHorizontal: 10, marginBottom: 10,
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
+  promoContainer: {
+    backgroundColor: '#2D1B4E',
+    marginBottom: 16,
   },
-  categoryImage: { width: 30, height: 30, borderRadius: 6, marginRight: 10 },
-  categoryText: { fontSize: 16, fontWeight: '600' },
-  chevronIcon: { marginLeft: 'auto', color: '#4B0082' },
-  subCategoryItem: {
-    backgroundColor: '#f8f4ff', paddingVertical: 8,
-    paddingHorizontal: 20, marginVertical: 2, borderRadius: 8,
+
+  carouselWrapper: {
+    position: 'relative',
   },
-  subCategoryText: { fontSize: 14, color: '#4B0082' },
+
+  promoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: isTablet ? 32 : 24,
+  },
+
+  promoContent: { paddingVertical: 12, flex: 1 },
+
+  promoSubtitle: {
+    fontSize: isTablet ? 13 : 12,
+    color: '#fff',
+    marginBottom: 8,
+    fontFamily: 'BricolageGrotesque_500Medium',
+  },
+
+  promoTitle: {
+    fontSize: isTablet ? 36 : 20,
+    color: '#fff',
+    lineHeight: isTablet ? 44 : 36,
+    marginBottom: 16,
+    fontFamily: 'BricolageGrotesque_700Bold',
+  },
+
+  shopButton: {
+    backgroundColor: '#df7512ff',
+    paddingVertical: isTablet ? 12 : 10,
+    paddingHorizontal: isTablet ? 24 : 20,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+
+  shopButtonText: {
+    color: '#fff',
+    fontSize: isTablet ? 13 : 12,
+    fontFamily: 'BricolageGrotesque_600SemiBold',
+  },
+
+  promoImage: {
+    width: isTablet ? 200 : 150,
+    height: isTablet ? 200 : 150,
+    marginLeft: 12,
+  },
+
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
+
+  dot: {
+    width: 20,
+    height: 4,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+  },
 });
 
 export default HomeScreen;

@@ -8,6 +8,7 @@ import {
   Dimensions,
   Animated,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -16,9 +17,7 @@ import {
   BricolageGrotesque_600SemiBold,
   BricolageGrotesque_700Bold,
 } from '@expo-google-fonts/bricolage-grotesque';
-import * as SplashScreen from 'expo-splash-screen';
-
-SplashScreen.preventAutoHideAsync();
+import { useOnboardingStore } from '../screens/src/store/onboardingStore';
 
 const { width } = Dimensions.get('window');
 
@@ -50,8 +49,11 @@ const Slides = ({ navigation }) => {
     BricolageGrotesque_700Bold,
   });
 
+  const { completeOnboarding } = useOnboardingStore();
+
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
   const buttonScale = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -60,25 +62,34 @@ const Slides = ({ navigation }) => {
     minimumViewTime: 300,
   }), []);
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  
   useEffect(() => {
     const interval = setInterval(() => {
       if (currentIndex < slides.length - 1) {
         handleNext(true);
       } else {
-        flatListRef.current.scrollToIndex({ index: 0, animated: true });
+        flatListRef.current?.scrollToIndex({ index: 0, animated: true });
         setCurrentIndex(0);
       }
     }, 5000);
 
     return () => clearInterval(interval);
   }, [currentIndex]);
+
+  const handleCompleteOnboarding = useCallback(async (screen: 'Login' | 'Signup') => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+
+    try {
+      await completeOnboarding(screen);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setIsNavigating(false);
+    }
+  }, [isNavigating, completeOnboarding]);
+
+  const handleSkip = async () => {
+    await handleCompleteOnboarding('Login');
+  };
 
   const handleNext = (auto = false) => {
     Animated.sequence([
@@ -87,10 +98,10 @@ const Slides = ({ navigation }) => {
     ]).start(() => {
       if (currentIndex < slides.length - 1) {
         animateFade();
-        flatListRef.current.scrollToIndex({ index: currentIndex + 1, animated: true });
+        flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
         setCurrentIndex(currentIndex + 1);
       } else if (!auto) {
-        navigation.replace('Signup');
+        handleGetStarted();
       }
     });
   };
@@ -98,7 +109,7 @@ const Slides = ({ navigation }) => {
   const handlePrev = () => {
     if (currentIndex > 0) {
       animateFade();
-      flatListRef.current.scrollToIndex({ index: currentIndex - 1, animated: true });
+      flatListRef.current?.scrollToIndex({ index: currentIndex - 1, animated: true });
       setCurrentIndex(currentIndex - 1);
     }
   };
@@ -112,16 +123,12 @@ const Slides = ({ navigation }) => {
     }).start();
   };
 
-  const handleSkip = () => {
-    navigation.replace('navigation');
-  };
-
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     Animated.sequence([
       Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start(() => {
-      navigation.replace('Signup');
+    ]).start(async () => {
+      await handleCompleteOnboarding('Signup');
     });
   };
 
@@ -134,7 +141,7 @@ const Slides = ({ navigation }) => {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
+    <View style={styles.container}>
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -163,8 +170,8 @@ const Slides = ({ navigation }) => {
 
       <SafeAreaView edges={['bottom']} style={styles.bottomContainer}>
         <View style={styles.navTextContainer}>
-          {currentIndex > 0 && (
-            <TouchableOpacity onPress={handlePrev}>
+          {currentIndex > 0 && !isNavigating && (
+            <TouchableOpacity onPress={handlePrev} style={styles.navButton}>
               <Text style={styles.navText}>Prev</Text>
             </TouchableOpacity>
           )}
@@ -187,20 +194,37 @@ const Slides = ({ navigation }) => {
             <TouchableOpacity
               onPress={currentIndex === slides.length - 1 ? handleGetStarted : () => handleNext()}
               activeOpacity={0.8}
+              disabled={isNavigating}
+              style={styles.navButton}
             >
-              <Text style={styles.navText}>
-                {currentIndex === slides.length - 1 ? 'Join us' : 'Next'}
-              </Text>
+              {isNavigating ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.navText}>
+                  {currentIndex === slides.length - 1 ? 'Join us' : 'Next'}
+                </Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
         </View>
       </SafeAreaView>
 
-      <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-        <Text style={styles.skipText}>Skip</Text>
-        <View style={styles.skipIcon}>
-          <View style={styles.skipIconArrow} />
-        </View>
+      <TouchableOpacity 
+        onPress={handleSkip} 
+        style={styles.skipButton}
+        disabled={isNavigating}
+        activeOpacity={0.7}
+      >
+        {isNavigating ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <>
+            <Text style={styles.skipText}>Skip</Text>
+            <View style={styles.skipIcon}>
+              <View style={styles.skipIconArrow} />
+            </View>
+          </>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -209,112 +233,156 @@ const Slides = ({ navigation }) => {
 export default Slides;
 
 const styles = StyleSheet.create({
+  // Main Container
   container: {
     flex: 1,
     backgroundColor: '#000',
   },
+
+  // Slide
   slide: {
     width,
     height: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
+
+  // Image
   fullImage: {
     position: 'absolute',
     width: '100%',
     height: '100%',
+    top: 0,
+    left: 0,
   },
-  overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
+
+ 
+
+  // Text Container
   textContainer: {
     position: 'absolute',
-    bottom: 120,
-    left: 20,
-    right: 20,
+    bottom: 140,
+    left: 24,
+    right: 24,
     alignItems: 'flex-start',
+    zIndex: 5,
   },
+
+
   title: {
-    fontSize: 26,
+    fontSize: 25,
     fontFamily: 'BricolageGrotesque_700Bold',
-    color: '#fff',
+    color: '#ffffff',
     marginBottom: 12,
     textAlign: 'left',
+    lineHeight: 40,
   },
+
+  
   description: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'BricolageGrotesque_400Regular',
-    color: '#fff',
+    color: '#e0e0e0',
     textAlign: 'left',
     lineHeight: 24,
-    paddingHorizontal: 0,
+    opacity: 0.95,
   },
-  bottomContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 30,
-    paddingHorizontal: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+
+  
+
+
+  
   navTextContainer: {
-    minWidth: 50,
+    minWidth: 60,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
+
+  
+  navButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+
+  
   navText: {
-    fontSize: 16,
+    fontSize: 13,
     fontFamily: 'BricolageGrotesque_600SemiBold',
-    color: '#fff',
+    color: '#ffffff',
+    letterSpacing: 0.5,
   },
+
+  
   dotsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
+
+
   dot: {
-    height: 8,
-    width: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
-    backgroundColor: '#999',
+    height: 7,
+    width: 7,
+    borderRadius: 3.5,
+    marginHorizontal: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    opacity: 0.6,
   },
+
+  
   activeDot: {
-    width: 16,
-    backgroundColor: '#fff',
+    width: 18,
+    backgroundColor: '#ffffff',
+    opacity: 1,
   },
+
+  
   skipButton: {
     position: 'absolute',
     top: 50,
-    right: 20,
-    padding: 10,
-    zIndex: 10,
+    right: 24,
+    padding: 12,
+    zIndex: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 15,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
+
+  
   skipText: {
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: 'BricolageGrotesque_600SemiBold',
-    color: '#fff',
-    opacity: 0.9,
+    color: '#ffffff',
+    opacity: 0.95,
+    letterSpacing: 0.3,
   },
+
+
   skipIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 50,
-    backgroundColor: '#fff',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+
   skipIconArrow: {
-    width: 10,
-    height: 10,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderTopColor: '#000',
-    borderRightColor: '#000',
+    width: 8,
+    height: 8,
+    borderTopWidth: 1.5,
+    borderRightWidth: 1.5,
+    borderTopColor: '#ffffff',
+    borderRightColor: '#ffffff',
     transform: [{ rotate: '45deg' }],
   },
 });

@@ -13,7 +13,7 @@ const SplashScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/logo/white.png')}
+        source={require('../assets/logo/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -26,7 +26,7 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4B0082',
+    backgroundColor: '#ffffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },

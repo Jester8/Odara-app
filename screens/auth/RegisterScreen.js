@@ -450,9 +450,10 @@ const getResponsiveStyles = () => {
       justifyContent: 'center'
     },
     logo: {
-      width: isTablet ? width * 0.25 : width * 0.35,
-      height: isTablet ? width * 0.1 : width * 0.15
+      width: isTablet ? width * 0.20 : width * 0.24,
+      height: isTablet ? width * 0.1 : width * 0.15,
     },
+    
     formContainer: {
       paddingVertical: isTablet ? height * 0.04 : height * 0.02,
       backgroundColor: '#fff',
@@ -460,15 +461,15 @@ const getResponsiveStyles = () => {
       borderRadius: isTablet ? 16 : 8
     },
     title: {
-      fontSize: isTablet ? 28 : 20,
+      fontSize: isTablet ? 28 : 25,
       fontWeight: 'bold',
       color: '#1a1a2e',
       marginBottom: isTablet ? 12 : 6,
       fontFamily: 'BricolageGrotesque_700Bold'
     },
     subtitle: {
-      fontSize: isTablet ? 15 : 12,
-      color: '#999',
+      fontSize: isTablet ? 15 : 15,
+      color: '#494848ff',
       marginBottom: isTablet ? 28 : 15,
       fontFamily: 'BricolageGrotesque_400Regular'
     },
@@ -476,7 +477,7 @@ const getResponsiveStyles = () => {
       marginBottom: isTablet ? height * 0.025 : height * 0.02
     },
     inputLabel: {
-      fontSize: isTablet ? 13 : 11,
+      fontSize: isTablet ? 13 : 15,
       color: '#333',
       marginBottom: 6,
       fontWeight: '500',
@@ -485,20 +486,20 @@ const getResponsiveStyles = () => {
     inputWrapper: {
       flexDirection: 'row',
       backgroundColor: '#fff',
-      borderRadius: isTablet ? 14 : width * 0.025,
-      paddingHorizontal: isTablet ? 18 : width * 0.03,
+      borderRadius: isTablet ? 14 : width * 25,
+      paddingHorizontal: isTablet ? 18 : width * 0.04,
       height: isTablet ? 62 : 50,
       alignItems: 'center',
-      borderWidth: 1.2,
+      borderWidth: 0.4,
       borderColor: isTablet ? '#e0e0e0' : '#1c0032'
     },
     input: {
       flex: 1,
-      fontSize: isTablet ? 13 : 12,
+      fontSize: isTablet ? 13 : 13,
       color: '#333',
       fontFamily: 'BricolageGrotesque_400Regular'
     },
-    iconSize: isTablet ? 28 : 20,
+    iconSize: isTablet ? 28 : 22,
     checkboxIconSize: isTablet ? 18 : 14,
     errorText: {
       color: '#e74c3c',
@@ -522,7 +523,7 @@ const getResponsiveStyles = () => {
       marginBottom: isTablet ? height * 0.03 : height * 0.025
     },
     checkboxLabel: {
-      fontSize: isTablet ? 12 : 10,
+      fontSize: isTablet ? 12 : 13,
       color: '#333',
       flex: 1,
       fontFamily: 'BricolageGrotesque_400Regular'
@@ -530,14 +531,14 @@ const getResponsiveStyles = () => {
     signUpButton: {
       backgroundColor: '#1c0032',
       height: isTablet ? 56 : 50,
-      borderRadius: 8,
+      borderRadius: 25,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: isTablet ? height * 0.03 : height * 0.025
     },
     signUpButtonText: {
       color: '#fff',
-      fontSize: isTablet ? 15 : 14,
+      fontSize: isTablet ? 15 : 18,
       fontWeight: '600',
       fontFamily: 'BricolageGrotesque_600SemiBold'
     },
@@ -549,38 +550,38 @@ const getResponsiveStyles = () => {
     orText: {
       paddingHorizontal: 15,
       color: '#777',
-      fontSize: isTablet ? 12 : 10,
+      fontSize: isTablet ? 12 : 15,
       fontFamily: 'BricolageGrotesque_400Regular'
     },
     googleButton: {
       flexDirection: 'row',
       height: isTablet ? 62 : 50,
-      borderWidth: 1.2,
+      borderWidth: 0.4,
       borderColor: isTablet ? '#e0e0e0' : '#1c0032',
-      borderRadius: isTablet ? 14 : 8,
+      borderRadius: isTablet ? 14 : 25,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: '#fff',
       marginBottom: isTablet ? height * 0.04 : height * 0.03
     },
     googleIcon: {
-      width: isTablet ? 42 : 32,
+      width: isTablet ? 42 : 38,
       height: isTablet ? 32 : 22,
       marginRight: 10
     },
     googleButtonText: {
       color: '#333',
-      fontSize: isTablet ? 14 : 12,
+      fontSize: isTablet ? 14 : 15,
       fontWeight: '500',
       fontFamily: 'BricolageGrotesque_500Medium'
     },
     signInText: {
-      fontSize: isTablet ? 13 : 12,
+      fontSize: isTablet ? 13 : 16,
       color: '#666',
       fontFamily: 'BricolageGrotesque_400Regular'
     },
     signInLink: {
-      fontSize: isTablet ? 13 : 12,
+      fontSize: isTablet ? 13 : 16,
       color: '#1c0032',
       fontWeight: '600',
       fontFamily: 'BricolageGrotesque_600SemiBold'

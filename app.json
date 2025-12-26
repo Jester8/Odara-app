@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "odara",
+    "name": "Odara",
     "slug": "odara-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/logo/main.png",
       "resizeMode": "contain",
-      "backgroundColor": "#200435"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#200435"
+        "backgroundColor": "#ffffff"
       },
       "icon": "./assets/icon.png",
       "edgeToEdgeEnabled": true,
@@ -38,6 +38,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/71ea8d4c-d71b-4374-8835-b3bfc598e133"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }

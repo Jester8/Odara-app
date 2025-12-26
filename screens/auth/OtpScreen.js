@@ -61,6 +61,7 @@ export default function ResetOtpScreen() {
     try {
       console.log('📧 Verifying reset OTP for email:', email);
       
+      // ✅ CHANGED: Use verify-reset-otp endpoint instead of verify-otp
       const response = await fetch(
         'https://odara-app.onrender.com/api/auth/verify-reset-otp',
         {
@@ -88,7 +89,7 @@ export default function ResetOtpScreen() {
         
         setTimeout(() => {
           setShowSuccessModal(false);
-          navigation.replace('NewPassword', { 
+          navigation.replace('ResetPassword', { 
             email, 
             otp: otpCode 
           });
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     marginTop: -30,
   },
   title: {
-    fontSize: 22,
+    fontSize: 25,
     color: '#000',
     textAlign: 'center',
     marginTop: -64,
@@ -321,10 +322,10 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: '#777',
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
     marginBottom: 25,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
   },
   asterisk: {
     color: 'red',
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1c002c',
     paddingVertical: 16,
     paddingHorizontal: 90,
-    borderRadius: 10,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 15,

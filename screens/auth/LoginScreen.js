@@ -16,9 +16,9 @@ import {
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authService } from '../services/authServices';
 import useAuthStore from '../src/store/useAuthStore';
 import {
   useFonts,
@@ -33,7 +33,9 @@ SplashScreen.preventAutoHideAsync();
 
 const { width, height } = Dimensions.get('window');
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
+  const navigation = useNavigation();
+  
   const [fontsLoaded] = useFonts({
     BricolageGrotesque_400Regular,
     BricolageGrotesque_500Medium,
@@ -47,74 +49,85 @@ const LoginScreen = ({ navigation }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const { setUser, setToken } = useAuthStore();
+  const { setError, clearError } = useAuthStore();
   
   const checkmarkScale = useRef(new Animated.Value(0)).current;
   const checkmarkOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (loginSuccess) {
-      checkmarkScale.setValue(0);
-      checkmarkOpacity.setValue(0);
-      
-      Animated.parallel([
-        Animated.spring(checkmarkScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-        Animated.timing(checkmarkOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+    clearError();
+  }, []);
 
-      setTimeout(() => {
-        setLoginSuccess(false);
-        navigation.replace('navigation');
-      }, 2000);
-    }
+  useEffect(() => {
+    if (!loginSuccess) return;
+
+    checkmarkScale.setValue(0);
+    checkmarkOpacity.setValue(0);
+    
+    Animated.parallel([
+      Animated.spring(checkmarkScale, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.timing(checkmarkOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const timer = setTimeout(() => {
+      setLoginSuccess(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
   }, [loginSuccess]);
 
+  const validateInputs = () => {
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    if (!password) {
+      setError('Please enter your password');
+      return false;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    clearError();
+
+    if (!validateInputs()) {
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axios.post("https://odara-app.onrender.com/api/auth/login", {
-        email,
+      await authService.signin({
+        email: email.trim(),
         password,
       });
 
-      if (response.data) {
-        const { token, user } = response.data;
-
-        if (rememberMe && token) {
-          await AsyncStorage.setItem('userToken', token);
-        }
-
-        try {
-          if (token && setToken) setToken(token);
-          if (user && setUser) setUser(user);
-        } catch (e) {
-          console.log('Store error:', e);
-        }
-        
-        setLoginSuccess(true);
-      } else {
-        Alert.alert('Login Failed', 'Invalid server response');
-      }
+      setLoginSuccess(true);
     } catch (error) {
-      console.log('Login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.message || 'Network error. Please try again.'
-      );
+      setError(error.message || 'Login failed. Please try again.');
+      Alert.alert('Login Failed', error.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -125,10 +138,12 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleSignUp = () => {
+    clearError();
     navigation.navigate('Signup');
   };
 
   const handleForgotPassword = () => {
+    clearError();
     navigation.navigate('ForgotPassword');
   };
 
@@ -165,9 +180,13 @@ const LoginScreen = ({ navigation }) => {
                   placeholder="Email address"
                   placeholderTextColor="#555"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    clearError();
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!loading}
                 />
               </View>
             </View>
@@ -183,11 +202,16 @@ const LoginScreen = ({ navigation }) => {
                   placeholderTextColor="#555"
                   secureTextEntry={!passwordVisible}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    clearError();
+                  }}
+                  editable={!loading}
                 />
                 <TouchableOpacity 
                   onPress={() => setPasswordVisible(!passwordVisible)}
                   style={styles.eyeIcon}
+                  disabled={loading}
                 >
                   <Feather 
                     name={passwordVisible ? "eye" : "eye-off"} 
@@ -203,6 +227,7 @@ const LoginScreen = ({ navigation }) => {
               <TouchableOpacity 
                 style={styles.checkboxContainer}
                 onPress={() => setRememberMe(!rememberMe)}
+                disabled={loading}
               >
                 <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
                   {rememberMe && <Feather name="check" size={responsiveStyles.checkboxIconSize} color="#fff" />}
@@ -210,7 +235,7 @@ const LoginScreen = ({ navigation }) => {
                 <Text style={responsiveStyles.checkboxLabel}>Remember Me</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleForgotPassword}>
+              <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
                 <Text style={responsiveStyles.forgotPassword}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
@@ -236,7 +261,7 @@ const LoginScreen = ({ navigation }) => {
             </View>
 
             {/* Google Login */}
-            <TouchableOpacity style={responsiveStyles.googleButton} onPress={handleGoogleLogin}>
+            <TouchableOpacity style={responsiveStyles.googleButton} onPress={handleGoogleLogin} disabled={loading}>
               <Image 
                 source={require('../../assets/logo/google.webp')} 
                 style={responsiveStyles.googleIcon}
@@ -248,7 +273,7 @@ const LoginScreen = ({ navigation }) => {
             {/* Signup Link */}
             <View style={styles.signupContainer}>
               <Text style={responsiveStyles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={handleSignUp}>
+              <TouchableOpacity onPress={handleSignUp} disabled={loading}>
                 <Text style={responsiveStyles.signupLink}>Sign Up</Text>
               </TouchableOpacity>
             </View>
@@ -284,7 +309,6 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-// Responsive styles function
 const getResponsiveStyles = () => {
   const isTablet = width >= 768;
   
@@ -304,7 +328,7 @@ const getResponsiveStyles = () => {
       paddingBottom: isTablet ? height * 0.03 : height * 0.02,
     },
     logo: {
-      width: isTablet ? width * 0.25 : width * 0.35,
+      width: isTablet ? width * 0.20 : width * 0.24,
       height: isTablet ? width * 0.1 : width * 0.15,
     },
     formContainer: {
@@ -320,7 +344,7 @@ const getResponsiveStyles = () => {
       fontFamily: 'BricolageGrotesque_700Bold',
     },
     subtitle: {
-      fontSize: isTablet ? 15 : 12,
+      fontSize: isTablet ? 15 : 15,
       color: '#999',
       marginBottom: isTablet ? 28 : 15,
       fontFamily: 'BricolageGrotesque_400Regular',
@@ -329,7 +353,7 @@ const getResponsiveStyles = () => {
       marginBottom: isTablet ? height * 0.025 : height * 0.02,
     },
     inputLabel: {
-      fontSize: isTablet ? 13 : 11,
+      fontSize: isTablet ? 13 : 15,
       color: '#333',
       marginBottom: 6,
       fontWeight: '500',
@@ -338,11 +362,11 @@ const getResponsiveStyles = () => {
     inputWrapper: {
       flexDirection: 'row',
       backgroundColor: '#fff',
-      borderRadius: isTablet ? 14 : width * 0.025,
+      borderRadius: isTablet ? 14 : width * 0.4,
       paddingHorizontal: isTablet ? 18 : width * 0.03,
       height: isTablet ? 62 : 50,
       alignItems: 'center',
-      borderWidth: 1.2,
+      borderWidth: 0.4,
       borderColor: isTablet ? '#e0e0e0' : '#1c0032',
     },
     input: {
@@ -360,12 +384,12 @@ const getResponsiveStyles = () => {
       marginBottom: isTablet ? height * 0.03 : height * 0.025,
     },
     checkboxLabel: {
-      fontSize: isTablet ? 12 : 10,
+      fontSize: isTablet ? 12 : 12,
       color: '#333',
       fontFamily: 'BricolageGrotesque_400Regular',
     },
     forgotPassword: {
-      fontSize: isTablet ? 12 : 10,
+      fontSize: isTablet ? 12 : 12,
       color: '#1c0032',
       fontWeight: '500',
       fontFamily: 'BricolageGrotesque_500Medium',
@@ -373,14 +397,14 @@ const getResponsiveStyles = () => {
     loginButton: {
       backgroundColor: '#1c0032',
       height: isTablet ? 62 : 50,
-      borderRadius: isTablet ? 14 : 8,
+      borderRadius: isTablet ? 25 : 25,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: isTablet ? height * 0.03 : height * 0.025,
     },
     loginButtonText: {
       color: '#fff',
-      fontSize: isTablet ? 15 : 14,
+      fontSize: isTablet ? 15 : 15,
       fontWeight: '600',
       fontFamily: 'BricolageGrotesque_600SemiBold',
     },
@@ -392,15 +416,15 @@ const getResponsiveStyles = () => {
     orText: {
       paddingHorizontal: 15,
       color: '#777',
-      fontSize: isTablet ? 12 : 10,
+      fontSize: isTablet ? 12 : 15,
       fontFamily: 'BricolageGrotesque_400Regular',
     },
     googleButton: {
       flexDirection: 'row',
       height: isTablet ? 62 : 50,
-      borderWidth: 1.2,
+      borderWidth: 0.4,
       borderColor: isTablet ? '#e0e0e0' : '#1c0032',
-      borderRadius: isTablet ? 14 : 8,
+      borderRadius: isTablet ? 14 : 25,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: '#fff',
@@ -413,17 +437,17 @@ const getResponsiveStyles = () => {
     },
     googleButtonText: {
       color: '#333',
-      fontSize: isTablet ? 14 : 12,
+      fontSize: isTablet ? 14 : 15,
       fontWeight: '500',
       fontFamily: 'BricolageGrotesque_500Medium',
     },
     signupText: {
-      fontSize: isTablet ? 13 : 12,
+      fontSize: isTablet ? 13 : 15,
       color: '#666',
       fontFamily: 'BricolageGrotesque_400Regular',
     },
     signupLink: {
-      fontSize: isTablet ? 13 : 12,
+      fontSize: isTablet ? 13 : 15,
       color: '#1c0032',
       fontWeight: '600',
       fontFamily: 'BricolageGrotesque_600SemiBold',
@@ -512,4 +536,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default LoginScreen;   
